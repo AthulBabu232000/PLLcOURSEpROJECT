@@ -1,0 +1,32 @@
+// VerilogA for PLL, cp, veriloga
+
+`include "constants.vams"
+`include "disciplines.vams"
+
+module cp(pout,nout,up,dn);
+
+	parameter real cur = 0.78e-3; //output current 100uA
+	parameter real threshold=0.5;
+	input up, dn;
+	output pout, nout;
+	electrical pout, nout, up, dn;
+	real out;
+
+                        
+
+    analog begin
+        @(initial_step) out = 0.0;        // Initialize current to 0.0
+
+        // Charge pump logic with threshold parameter
+        if ((V(dn) > threshold) && (V(up) < threshold)) begin
+            out = -cur;                    // Sink 7.43mA when dn is high
+        end
+        else if ((V(dn) < threshold) && (V(up) > threshold)) begin
+            out = cur;                     // Source 7.43mA when up is high
+        end
+        else out = 0.0;                    // No current if both or neither signals are high
+
+        // Apply current with realistic transition time (100 ps)
+        I(pout, nout) <+ -transition(out, 0.0, 1p, 1p);
+    end
+endmodule

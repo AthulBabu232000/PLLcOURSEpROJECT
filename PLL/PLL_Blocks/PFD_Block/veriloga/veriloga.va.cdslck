@@ -1,0 +1,16 @@
+#
+# Edit Lock-Stake file. CAUTION: Please do not change.
+#
+# Information about current Edit Lock Owner.
+#
+LockStakeVersion               1.1
+LoginName                      VLSICSLLAB_7
+HostName                       csl1.iitrpr.ac.in
+ProcessIdentifier              15190
+ProcessCreationTime_UTC        1743343125
+ProcessCreationTime_Readable   Sun Mar 30 19:28:45 2025 IST
+AppIdentifier                  /cad/IC617/tools.lnx86/dfII/bin/64bit/virtuoso
+OSType                         lnx86
+ReasonForPlacingEditLock       Text Edit
+FilePathUsedToEditLock         /home/VLSICSLLAB_7/Desktop/Work/PLL/pfd/veriloga/veriloga.va
+TimeEditLocked                 Sun Mar 30 20:01:49 2025 IST

@@ -1,0 +1,9 @@
+// VerilogA for PLL, PFD, veriloga
+
+`include "constants.vams"
+`include "disciplines.vams"
+
+module PFD;
+
+
+endmodule

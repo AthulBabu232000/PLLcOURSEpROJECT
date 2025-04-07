@@ -1,0 +1,85 @@
+clc; clear; close all;
+
+% Given Parameters
+
+
+Kvco = 2 * pi * 180e6; 
+M = 16;
+Icp = 7.43e-3;
+R1 = 610; 
+C1 = 129.3e-12; 
+C2 = C1 / 12.93;
+
+% Compute Constants
+s = tf('s'); % Define Laplace variable s
+Fs = tf([R1*C1 1], [R1*C1*C2 C1+C2 0]);
+LG = (Icp * Kvco * Fs) / (2 * pi * M * s);
+NTF = M * feedback(LG, 1); % Both NTF_ref and NTF_div are the same
+NTF_LPF=(Kvco/s)*(1/(1+LG));
+NTF_VCO=(1/(1+LG));
+
+
+% Process Reference Noise
+data1 = readmatrix('Ref_Noise.csv'); 
+frequency1 = data1(:,1); % Frequency in Hz
+noise_dBc1 = data1(:,2); % Noise in dBc
+noise_linear1 = 10.^(noise_dBc1 / 10);
+[mag1, ~] = bode(NTF, 2 * pi * frequency1);
+mag_linear1 = squeeze(mag1).^2;
+processed_noise_linear1 = noise_linear1 .* mag_linear1;
+processed_noise_dBc1 = 10 * log10(processed_noise_linear1);
+
+% Process Divider Noise
+data2 = readmatrix('Divider_Noise.csv'); 
+frequency2 = data2(:,1); % Frequency in Hz
+noise_dBc2 = data2(:,2); % Noise in dBc
+noise_linear2 = 10.^(noise_dBc2 / 10);
+[mag2, ~] = bode(NTF, 2 * pi * frequency2);
+mag_linear2 = squeeze(mag2).^2;
+processed_noise_linear2 = noise_linear2 .* mag_linear2;
+processed_noise_dBc2 = 10 * log10(processed_noise_linear2);
+
+% Process low pass filter Noise
+data3 = readmatrix('CP_Noise.csv'); 
+frequency3 = data3(:,1); % Frequency in Hz
+noise_dBc3 = data3(:,2); % Noise in dBc
+noise_linear3 = 10.^(noise_dBc3 / 10);
+[mag3, ~] = bode(NTF_LPF, 2 * pi * frequency3);
+mag_linear3 = squeeze(mag3).^2;
+processed_noise_linear3 = noise_linear3 .* mag_linear3;
+processed_noise_dBc3 = 10 * log10(processed_noise_linear3);
+
+% Process VCO Noise
+data4 = readmatrix('VCO_Noise.csv'); 
+frequency4 = data4(:,1); % Frequency in Hz
+noise_dBc4 = data4(:,2); % Noise in dBc
+noise_linear4 = 10.^(noise_dBc4 / 10);
+[mag4, ~] = bode(NTF_VCO, 2 * pi * frequency4);
+mag_linear4 = squeeze(mag4).^2;
+processed_noise_linear4 = noise_linear4 .* mag_linear4;
+processed_noise_dBc4 = 10 * log10(processed_noise_linear4);
+
+
+processed=processed_noise_linear1+processed_noise_linear2+processed_noise_linear3+processed_noise_linear4;
+processed2=processed_noise_linear1-processed_noise_linear2+processed_noise_linear3+processed_noise_linear4
+
+processed_db=10 * log10(processed);
+processed2_db=10*log10(processed2);
+% Plot both noise spectrums
+figure;
+
+semilogx(frequency1, processed_noise_dBc1, 'r', 'LineWidth', 2); hold on;
+semilogx(frequency2, processed_noise_dBc2, 'g', 'LineWidth', 2);
+semilogx(frequency3, processed_noise_dBc3, 'b', 'LineWidth', 2);
+semilogx(frequency4, processed_noise_dBc4, 'c', 'LineWidth', 2);
+semilogx(frequency4, processed_db, 'k', 'LineWidth', 2);
+grid on;
+
+xlabel('Frequency (Hz, log scale)');
+ylabel('Phase Noise (dBc/Hz)');
+
+title('Phase noise contribu of type II third order PLL');
+legend('Noise - Reference', 'Noise - Divider', 'Noise - Loop Filter', 'Noise - VCO', 'Noise - Total');
+
+set(gca, 'FontSize', 12);
+NTF
